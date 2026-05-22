@@ -2,7 +2,7 @@
   "76561199855344035": {
     "nickname": "Baltika9",
     "avatar": "https://avatars.steamstatic.com/0ef4c3f8ca2b06c59860bee9e243d3f97c00e289_full.jpg",
-    "stars": 3060,
+    "stars": 3110,
     "inventory": [
       {
         "name": "Iron Branch",
@@ -15,10 +15,16 @@
         "rarity": "Rare",
         "icon": "⚔️",
         "image": ""
+      },
+      {
+        "name": "Iron Branch",
+        "rarity": "Common",
+        "icon": "🌿",
+        "image": ""
       }
     ],
     "questsCompleted": 0,
-    "casesOpened": 2,
+    "casesOpened": 3,
     "dailyBonusAvailable": false,
     "firstCaseFree": false,
     "completedQuestsIds": [],

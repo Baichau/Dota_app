@@ -175,83 +175,100 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---------- Wheel (unlimited spins) ----------
-  let wheelSpinning = false;
-  let currentWheelRotation = 0;
+let wheelSpinning = false;
+// Track continuous rotation so the wheel doesn't snap backwards on consecutive spins
+let currentWheelRotation = 0; 
 
- function initWheelLabels() {
+function initWheelLabels() {
   const container = document.querySelector('#wheelSpinner .wheel-labels');
   if (!container) return;
   const rewards = ['50⭐', '100⭐', '25⭐', '200⭐', '75⭐', '🎁 Case', '150⭐', '10⭐'];
   container.innerHTML = '';
-  const radius = 115;
-  const centerX = 140, centerY = 140;
+  
   for (let i = 0; i < 8; i++) {
     const span = document.createElement('span');
-    // Place each label exactly at the center of its segment (45° per segment, center at i*45 + 22.5)
-    const angle = (i * 45 + 22.5) * Math.PI / 180;
-    const x = centerX + radius * Math.cos(angle);
-    const y = centerY + radius * Math.sin(angle);
-    span.style.left = `${x}px`;
-    span.style.top = `${y}px`;
-    span.style.transform = `translate(-50%, -50%)`;
+    // Calculate mid-angle for the text slice
+    const angle = i * 45 + 22.5; 
+    
+    // Position exactly in center, use rotation and translation to push outward
+    span.style.transform = `rotate(${angle}deg) translateY(-100px) translateX(-50%)`;
     span.textContent = rewards[i];
     container.appendChild(span);
   }
 }
 
-  document.getElementById('btnSpinWheel')?.addEventListener('click', async function() {
-    if (wheelSpinning) return;
-    if (!state.user) return toast('Login first!', 'warning');
+// Daily Bonus Button Open Modal
+document.getElementById('btnDailyBonus')?.addEventListener('click', () => {
+  if (!state.user) return toast('Login first!', 'warning');
+  document.getElementById('wheelModal').classList.remove('hidden');
+  document.getElementById('wheelNote').textContent = 'Spin anytime! No cooldown.';
+  document.getElementById('wheelResult').textContent = '';
+  
+  const wheel = document.getElementById('wheelSpinner');
+  wheel.style.transition = 'none';
+  currentWheelRotation = 0;
+  wheel.style.transform = `rotate(0deg)`;
+  wheelSpinning = false;
+  initWheelLabels();
+});
+
+// Spin Button Logic
+document.getElementById('btnSpinWheel')?.addEventListener('click', async function() {
+  if (wheelSpinning) return;
+  if (!state.user) return toast('Login first!', 'warning');
+  
+  wheelSpinning = true;
+  document.getElementById('wheelResult').textContent = '';
+  
+  const wheel = document.getElementById('wheelSpinner');
+  const rewards = [50, 100, 25, 200, 75, 'Case', 150, 10];
+  
+  // 1. Pick a random reward index
+  const rewardIndex = Math.floor(Math.random() * rewards.length);
+  const reward = rewards[rewardIndex];
+  
+  // 2. CRITICAL MATH FIX: 
+  // To bring index i to the top pointer (0 deg), we must rotate counter-clockwise by its angle.
+  // formula: (360 - (index * 45 + 22.5))
+  const targetSegmentCenter = 360 - (rewardIndex * 45 + 22.5);
+  
+  // Add 5 to 10 full spins for visual effect
+  const extraSpins = (Math.floor(Math.random() * 6) + 5) * 360;
+  
+  // Calculate total rotation relative to current position to avoid backward rewinding spins
+  currentWheelRotation = currentWheelRotation + extraSpins + (targetSegmentCenter - (currentWheelRotation % 360));
+  
+  // 3. Animate smoothly
+  wheel.style.transition = 'transform 4s cubic-bezier(0.15, 0.85, 0.35, 1)';
+  wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
+  
+  // 4. After animation completes
+  setTimeout(async () => {
+    if (reward === 'Case') {
+      state.inventory.push({ name: 'Bonus Case (Wheel)', rarity: 'Rare', icon: '🎁', image: '' });
+      document.getElementById('wheelResult').textContent = 'You won a Bonus Case! 🎁';
+      toast('Bonus Case added to inventory!', 'success');
+    } else {
+      state.stars += reward;
+      document.getElementById('wheelResult').textContent = `You won ${reward} Stars! ⭐`;
+      toast(`+${reward} Stars!`, 'success');
+    }
     
-    wheelSpinning = true;
-    const wheel = document.getElementById('wheelSpinner');
-    const rewards = [50, 100, 25, 200, 75, 'Case', 150, 10];
+    updateUI();
+    renderInventory();
+    await saveUserData();
     
-    // 1. Pick random reward
-    const rewardIndex = Math.floor(Math.random() * rewards.length);
-    const reward = rewards[rewardIndex];
-    
-    // 2. Calculate target final rotation so that the chosen segment's center points to top (0°)
-    // Segment centers are at angles: index*45 + 22.5
-    const targetCenterAngle = rewardIndex * 45 + 22.5;
-    // We want (targetCenterAngle - finalRotation) % 360 = 0  => finalRotation % 360 = targetCenterAngle
-    let targetRotation = targetCenterAngle;
-    // Add random extra full spins (5-10) for realism
-    const extraSpins = 360 * (5 + Math.floor(Math.random() * 6));
-    targetRotation += extraSpins;
-    
-    // 3. Calculate delta from current rotation
-    let delta = targetRotation - currentWheelRotation;
-    // Ensure delta is positive for smooth forward spin
-    if (delta <= 0) delta += 360;
-    // Add a little more randomness to delta (up to 360 extra) to make it less predictable
-    delta += Math.random() * 360;
-    
-    const newRotation = currentWheelRotation + delta;
-    currentWheelRotation = newRotation;
-    
-    // 4. Apply animation
-    wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
-    wheel.style.transform = `rotate(${newRotation}deg)`;
-    
-    // 5. After spin, give reward
-    setTimeout(async () => {
-      if (reward === 'Case') {
-        state.inventory.push({ name: 'Bonus Case (Wheel)', rarity: 'Rare', icon: '🎁', image: '' });
-        document.getElementById('wheelResult').textContent = 'You won a Bonus Case! 🎁';
-        toast('Bonus Case added to inventory!', 'success');
-      } else {
-        state.stars += reward;
-        document.getElementById('wheelResult').textContent = `You won ${reward} Stars! ⭐`;
-        toast(`+${reward} Stars!`, 'success');
-      }
-      updateUI();
-      renderInventory();
-      await saveUserData();
-      wheelSpinning = false;
-      // Do NOT reset wheel to 0 – keep its position
-    }, 4000);
-  });
+    // Allow spinning again without snapping the wheel back to 0 immediately
+    wheelSpinning = false;
+  }, 4000);
+});
+
+// Close Modal
+document.getElementById('wheelModalClose')?.addEventListener('click', () => {
+  document.getElementById('wheelModal').classList.add('hidden');
+  wheelSpinning = false;
+});
+
 
   document.getElementById('btnDailyBonus')?.addEventListener('click', () => {
     if (!state.user) return toast('Login first!', 'warning');
@@ -324,7 +341,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('wheelModal').classList.add('hidden');
     const wheel = document.getElementById('wheelSpinner');
     wheel.style.transition = 'none';
-    
     wheelSpinning = false;
   });
 

@@ -568,8 +568,9 @@ body {
     #e2b04a 180deg 225deg, #b8860b 225deg 270deg,
     #e2b04a 270deg 315deg, #b8860b 315deg 360deg
   );
-  border: 3px solid var(--gold);
+  border: 3px solid #e2b04a;
   transition: transform 0s;
+  overflow: hidden;
 }
 .wheel-labels {
   position: absolute;
@@ -581,22 +582,27 @@ body {
 }
 .wheel-labels span {
   position: absolute;
-  font-size: 0.75rem;
+  top: 50%;
+  left: 50%;
+  font-size: 0.85rem;
   font-weight: bold;
   color: #2c1a0a;
   text-shadow: 0 1px 0 rgba(255,255,255,0.6);
   white-space: nowrap;
+  /* Transform origin must be the center of the wheel */
+  transform-origin: 0 0; 
 }
 .wheel-pointer {
   position: absolute;
-  top: -20px;
+  top: -15px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 2rem;
-  color: var(--gold);
-  filter: drop-shadow(0 0 4px black);
+  color: #e2b04a;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
   z-index: 5;
 }
+
 .roll-preview {
   text-align: center;
   margin-top: 1rem;
