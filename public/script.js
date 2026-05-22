@@ -1,12 +1,10 @@
 // ==================== DotaQuest Hub – Frontend (FULLY FIXED) ====================
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Parse Steam redirect parameters ---
+  // --- Parse Steam redirect parameters ---
   const urlParams = new URLSearchParams(window.location.search);
   const steamIdFromUrl = urlParams.get('steamId');
   if (steamIdFromUrl) {
-    // Remove parameters from URL without reloading page
     window.history.replaceState({}, document.title, window.location.pathname);
-    // Force a refresh of user data after a short delay
     setTimeout(() => {
       fetchUser().then(() => {
         updateUI();
@@ -18,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }, 100);
   }
+
   // ---------- State ----------
   let state = {
     user: null,
@@ -25,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inventory: [],
     questsCompleted: 0,
     casesOpened: 0,
-    dailyBonusAvailable: true,
+    dailyBonusAvailable: true,   // kept for backend but we ignore limit
     firstCaseFree: true,
     completedQuestsIds: [],
     casesData: [],
@@ -70,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
           state.dailyBonusAvailable = user.dailyBonusAvailable ?? true;
           state.firstCaseFree = user.firstCaseFree ?? true;
           state.completedQuestsIds = user.completedQuestsIds || [];
-          // Sync quest statuses
           mockQuests.forEach(q => {
             q.status = state.completedQuestsIds.includes(q.id) ? 'completed' : 'active';
           });
@@ -108,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.user) {
       document.getElementById('userNameMini').textContent = state.user.nickname;
       document.getElementById('userAvatarMini').src = state.user.avatar;
-      //document.getElementById('dashName').textContent = state.user.nickname;
       document.getElementById('profileName').textContent = state.user.nickname;
       document.getElementById('profileAvatar').src = state.user.avatar;
       document.getElementById('profileSteamId').textContent = `Steam ID: ${state.user.steamId}`;
@@ -132,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     const activeNav = document.querySelector(`.nav-item[data-screen="${screenId}"]`);
     if (activeNav) activeNav.classList.add('active');
-    // Refresh dynamic content when screen opens
     if (screenId === 'inventory') renderInventory();
     if (screenId === 'quests') renderQuests();
     if (screenId === 'cases' && state.casesData.length) renderCases();
@@ -178,53 +174,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ---------- Daily Bonus Wheel (Fixed) ----------
+  // ---------- Wheel (unlimited spins) ----------
   let wheelSpinning = false;
+  let currentWheelRotation = 0;
 
-// ---------- Wheel label generator (inside spinner) ----------
-function initWheelLabels() {
+ function initWheelLabels() {
   const container = document.querySelector('#wheelSpinner .wheel-labels');
   if (!container) return;
   const rewards = ['50⭐', '100⭐', '25⭐', '200⭐', '75⭐', '🎁 Case', '150⭐', '10⭐'];
   container.innerHTML = '';
+  const radius = 115;
+  const centerX = 140, centerY = 140;
   for (let i = 0; i < 8; i++) {
     const span = document.createElement('span');
-    const angle = i * 45;
-    // Position around the circle (radius 125px from center)
-    span.style.transform = `rotate(${angle}deg) translate(125px) rotate(${-angle}deg)`;
+    // Place each label exactly at the center of its segment (45° per segment, center at i*45 + 22.5)
+    const angle = (i * 45 + 22.5) * Math.PI / 180;
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY + radius * Math.sin(angle);
+    span.style.left = `${x}px`;
+    span.style.top = `${y}px`;
+    span.style.transform = `translate(-50%, -50%)`;
     span.textContent = rewards[i];
     container.appendChild(span);
   }
 }
 
-  document.getElementById('btnDailyBonus')?.addEventListener('click', () => {
-    if (!state.user) return toast('Login first!', 'warning');
-    if (!state.dailyBonusAvailable) return toast('Already claimed today!', 'warning');
-    document.getElementById('wheelModal').classList.remove('hidden');
-    document.getElementById('wheelNote').textContent = 'Spin once per day';
-    document.getElementById('wheelResult').textContent = '';
-    const wheel = document.getElementById('wheelSpinner');
-    wheel.style.transition = 'none';
-    wheel.style.transform = 'rotate(0deg)';
-    wheelSpinning = false;
-    initWheelLabels();
-  });
-
   document.getElementById('btnSpinWheel')?.addEventListener('click', async function() {
-    if (!state.dailyBonusAvailable) { toast('Already claimed today!', 'warning'); return; }
     if (wheelSpinning) return;
+    if (!state.user) return toast('Login first!', 'warning');
+    
     wheelSpinning = true;
     const wheel = document.getElementById('wheelSpinner');
     const rewards = [50, 100, 25, 200, 75, 'Case', 150, 10];
-    const randomDeg = Math.floor(Math.random() * 360) + 1440;
+    
+    // 1. Pick random reward
+    const rewardIndex = Math.floor(Math.random() * rewards.length);
+    const reward = rewards[rewardIndex];
+    
+    // 2. Calculate target final rotation so that the chosen segment's center points to top (0°)
+    // Segment centers are at angles: index*45 + 22.5
+    const targetCenterAngle = rewardIndex * 45 + 22.5;
+    // We want (targetCenterAngle - finalRotation) % 360 = 0  => finalRotation % 360 = targetCenterAngle
+    let targetRotation = targetCenterAngle;
+    // Add random extra full spins (5-10) for realism
+    const extraSpins = 360 * (5 + Math.floor(Math.random() * 6));
+    targetRotation += extraSpins;
+    
+    // 3. Calculate delta from current rotation
+    let delta = targetRotation - currentWheelRotation;
+    // Ensure delta is positive for smooth forward spin
+    if (delta <= 0) delta += 360;
+    // Add a little more randomness to delta (up to 360 extra) to make it less predictable
+    delta += Math.random() * 360;
+    
+    const newRotation = currentWheelRotation + delta;
+    currentWheelRotation = newRotation;
+    
+    // 4. Apply animation
     wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
-    wheel.style.transform = `rotate(${randomDeg}deg)`;
-
+    wheel.style.transform = `rotate(${newRotation}deg)`;
+    
+    // 5. After spin, give reward
     setTimeout(async () => {
-      const finalDeg = randomDeg % 360;
-      const segmentIndex = Math.floor(((360 - finalDeg) % 360) / 45);
-      const reward = rewards[segmentIndex];
-
       if (reward === 'Case') {
         state.inventory.push({ name: 'Bonus Case (Wheel)', rarity: 'Rare', icon: '🎁', image: '' });
         document.getElementById('wheelResult').textContent = 'You won a Bonus Case! 🎁';
@@ -234,13 +245,78 @@ function initWheelLabels() {
         document.getElementById('wheelResult').textContent = `You won ${reward} Stars! ⭐`;
         toast(`+${reward} Stars!`, 'success');
       }
-      state.dailyBonusAvailable = false;
-      document.getElementById('wheelNote').textContent = 'Already claimed today';
       updateUI();
       renderInventory();
       await saveUserData();
       wheelSpinning = false;
+      // Do NOT reset wheel to 0 – keep its position
+    }, 4000);
+  });
+
+  document.getElementById('btnDailyBonus')?.addEventListener('click', () => {
+    if (!state.user) return toast('Login first!', 'warning');
+    // No daily limit – always show wheel
+    document.getElementById('wheelModal').classList.remove('hidden');
+    document.getElementById('wheelNote').textContent = 'Spin anytime! No cooldown.';
+    document.getElementById('wheelResult').textContent = '';
+    const wheel = document.getElementById('wheelSpinner');
+    wheel.style.transition = 'none';
+      document.getElementById('wheelModalClose')?.addEventListener('click', () => {
+    document.getElementById('wheelModal').classList.add('hidden');
+    // Do NOT reset wheel rotation, keep it as is
+    wheelSpinning = false;
+   });
+      wheelSpinning = false;
+    initWheelLabels();
+  });
+
+  document.getElementById('btnSpinWheel')?.addEventListener('click', async function() {
+    if (wheelSpinning) return;
+    if (!state.user) return toast('Login first!', 'warning');
+    
+    wheelSpinning = true;
+    const wheel = document.getElementById('wheelSpinner');
+    const rewards = [50, 100, 25, 200, 75, 'Case', 150, 10];
+    
+    // 1. Pick a random reward
+    const rewardIndex = Math.floor(Math.random() * rewards.length);
+    const reward = rewards[rewardIndex];
+    
+    // 2. Calculate required final rotation so that the chosen segment's CENTER aligns with the pointer (at top, 0°)
+    // Each segment is 45°, center is at (segmentIndex * 45 + 22.5) degrees.
+    const targetSegmentCenter = rewardIndex * 45 + 22.5;
+    // The pointer is at the top (0°). We need wheel to rotate such that the target center comes to 0°.
+    // Current rotation = 0. After rotation = finalRotation. The position of that segment on wheel = (targetSegmentCenter - finalRotation) mod 360.
+    // We want (targetSegmentCenter - finalRotation) mod 360 = 0 (pointer at top).
+    // So finalRotation mod 360 = targetSegmentCenter.
+    let finalRotation = targetSegmentCenter;
+    // Add multiple full spins (e.g., 5 to 10 extra rotations) for natural look
+    const extraSpins = Math.floor(Math.random() * 6) + 5; // between 5 and 10 full spins
+    finalRotation += extraSpins * 360;
+    
+    // 3. Animate
+    wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+    wheel.style.transform = `rotate(${finalRotation}deg)`;
+    
+    // 4. After animation, apply reward
+    setTimeout(async () => {
+      if (reward === 'Case') {
+        state.inventory.push({ name: 'Bonus Case (Wheel)', rarity: 'Rare', icon: '🎁', image: '' });
+        document.getElementById('wheelResult').textContent = 'You won a Bonus Case! 🎁';
+        toast('Bonus Case added to inventory!', 'success');
+      } else {
+        state.stars += reward;
+        document.getElementById('wheelResult').textContent = `You won ${reward} Stars! ⭐`;
+        toast(`+${reward} Stars!`, 'success');
+      }
+      updateUI();
+      renderInventory();
+      await saveUserData();
+      wheelSpinning = false;
+      // Reset transition for next spin
       wheel.style.transition = 'none';
+      wheel.style.transform = `rotate(0deg)`;
+      // Force reflow? Not necessary, but we keep wheel at 0 for next spin
     }, 4000);
   });
 
@@ -248,11 +324,11 @@ function initWheelLabels() {
     document.getElementById('wheelModal').classList.add('hidden');
     const wheel = document.getElementById('wheelSpinner');
     wheel.style.transition = 'none';
-    wheel.style.transform = 'rotate(0deg)';
+    
     wheelSpinning = false;
   });
 
-  // ---------- Quests (with OpenDota validation) ----------
+  // ---------- Quests ----------
   function renderQuests(filter = 'all') {
     const grid = document.getElementById('questsGrid');
     if (!grid) return;
@@ -320,9 +396,42 @@ function initWheelLabels() {
   async function loadCases() {
     try {
       const res = await fetch('/api/cases');
-      state.casesData = await res.json();
-      renderCases();
-    } catch (err) { console.error('Failed to load cases', err); }
+      if (res.ok) {
+        state.casesData = await res.json();
+      } else {
+        throw new Error('Backend not ready');
+      }
+    } catch (err) {
+      console.warn('Using mock case data');
+      state.casesData = [
+        {
+          id: 1,
+          name: 'Treasure of the Crimson Witness',
+          cost: 100,
+          image: '🎁',
+          contents: [
+            { name: 'Wraith Band', rarity: 'Common', chance: 50, icon: '⚙️' },
+            { name: 'Phase Boots', rarity: 'Common', chance: 40, icon: '👟' },
+            { name: 'Blink Dagger', rarity: 'Rare', chance: 7, icon: '🗡️' },
+            { name: 'Aghanim\'s Scepter', rarity: 'Mythical', chance: 2.5, icon: '🔮' },
+            { name: 'Divine Rapier', rarity: 'Legendary', chance: 0.5, icon: '⚔️' }
+          ]
+        },
+        {
+          id: 2,
+          name: 'Arcana Vault',
+          cost: 300,
+          image: '💎',
+          contents: [
+            { name: 'Heroic Cache', rarity: 'Common', chance: 60, icon: '📦' },
+            { name: 'Immortal Golden', rarity: 'Rare', chance: 25, icon: '🏅' },
+            { name: 'Arcana (PA)', rarity: 'Arcana', chance: 2, icon: '🗡️' },
+            { name: 'Arcana (Zeus)', rarity: 'Arcana', chance: 2, icon: '⚡' }
+          ]
+        }
+      ];
+    }
+    renderCases();
   }
 
   function renderCases() {
@@ -342,68 +451,101 @@ function initWheelLabels() {
   let currentCaseCost = 0;
 
   document.getElementById('casesGrid')?.addEventListener('click', (e) => {
-    if (e.target.classList.contains('btn-buy-case')) {
-      const cost = parseInt(e.target.dataset.cost);
-      const caseId = parseInt(e.target.dataset.id);
-      const currentCase = state.casesData.find(c => c.id === caseId);
-      if (!currentCase) return;
-      currentCaseContents = currentCase.contents;
-      currentCaseCost = cost;
+    const btn = e.target.closest('.btn-buy-case');
+    if (!btn) return;
+    const cost = parseInt(btn.dataset.cost);
+    const caseId = parseInt(btn.dataset.id);
+    const currentCase = state.casesData.find(c => c.id === caseId);
+    if (!currentCase) return;
+    currentCaseContents = currentCase.contents;
+    currentCaseCost = cost;
 
-      if (state.firstCaseFree && cost > 0) {
-        state.firstCaseFree = false;
-        toast('First case is FREE!', 'success');
-        openCaseModal(currentCase.name, 0, currentCase.contents);
-      } else {
-        if (state.stars < cost) return toast('Not enough Stars!', 'error');
-        openCaseModal(currentCase.name, cost, currentCase.contents);
-      }
+    if (state.firstCaseFree && cost > 0) {
+      state.firstCaseFree = false;
+      toast('First case is FREE!', 'success');
+      openCaseModal(currentCase.name, 0, currentCase.contents);
+    } else {
+      if (state.stars < cost) return toast('Not enough Stars!', 'error');
+      openCaseModal(currentCase.name, cost, currentCase.contents);
     }
   });
 
   function openCaseModal(caseName, cost, contents) {
+    const safeContents = contents.map(item => ({
+      ...item,
+      chance: item.chance !== undefined ? item.chance : 1
+    }));
+
     const modal = document.getElementById('caseModal');
+    if (!modal) {
+      console.error('Case modal not found');
+      return;
+    }
     modal.classList.remove('hidden');
     document.getElementById('caseModalName').textContent = caseName;
     document.getElementById('caseModalCost').textContent = cost;
     document.getElementById('chestStage').classList.remove('hidden');
     document.getElementById('resultStage').classList.add('hidden');
-    document.getElementById('chestLid').style.transform = 'rotateX(0)';
+    
+    const lid = document.getElementById('chestLid');
+    if (lid) lid.style.transform = 'rotateX(0)';
 
     const btnOpen = document.getElementById('btnOpenChest');
-    btnOpen.onclick = async () => {
-      if (cost > 0 && !(state.firstCaseFree && state.casesOpened === 0)) {
+    if (!btnOpen) {
+      console.error('Button #btnOpenChest missing');
+      return;
+    }
+
+    // Remove previous listener to avoid duplicates
+    const newBtn = btnOpen.cloneNode(true);
+    btnOpen.parentNode.replaceChild(newBtn, btnOpen);
+    
+    newBtn.onclick = async () => {
+      if (cost > 0) {
+        if (state.stars < cost) {
+          toast('Not enough stars!', 'error');
+          modal.classList.add('hidden');
+          return;
+        }
         state.stars -= cost;
       }
       updateUI();
 
-      document.getElementById('chestLid').style.transform = 'rotateX(-60deg) translateY(-20px)';
+      const chestLid = document.getElementById('chestLid');
+      if (chestLid) chestLid.style.transform = 'rotateX(-60deg) translateY(-20px)';
+      
       const rollPreview = document.getElementById('rollPreview');
-      rollPreview.classList.remove('hidden');
       const rollItemName = document.getElementById('rollItemName');
+      if (rollPreview) rollPreview.classList.remove('hidden');
+      
       let rollInterval = setInterval(() => {
-        const rand = contents[Math.floor(Math.random() * contents.length)];
-        rollItemName.textContent = rand.name;
+        const rand = safeContents[Math.floor(Math.random() * safeContents.length)];
+        if (rollItemName) rollItemName.textContent = rand.name;
       }, 80);
 
       setTimeout(async () => {
         clearInterval(rollInterval);
-        rollPreview.classList.add('hidden');
+        if (rollPreview) rollPreview.classList.add('hidden');
         document.getElementById('chestStage').classList.add('hidden');
         document.getElementById('resultStage').classList.remove('hidden');
 
-        const totalWeight = contents.reduce((s, it) => s + it.chance, 0);
+        const totalWeight = safeContents.reduce((sum, it) => sum + it.chance, 0);
         let rand = Math.random() * totalWeight;
-        let chosen = contents[0];
-        for (const item of contents) {
-          if (rand < item.chance) { chosen = item; break; }
+        let chosen = safeContents[0];
+        for (const item of safeContents) {
+          if (rand < item.chance) {
+            chosen = item;
+            break;
+          }
           rand -= item.chance;
         }
 
         document.getElementById('resultItemName').textContent = chosen.name;
         document.getElementById('resultItemRarity').textContent = chosen.rarity;
-        document.getElementById('resultItemRarity').style.color = getRarityColor(chosen.rarity);
-        document.getElementById('resultItemGlow').style.boxShadow = `0 0 30px ${getRarityColor(chosen.rarity)}`;
+        const rarityColor = getRarityColor(chosen.rarity);
+        document.getElementById('resultItemRarity').style.color = rarityColor;
+        const glow = document.getElementById('resultItemGlow');
+        if (glow) glow.style.boxShadow = `0 0 30px ${rarityColor}`;
         document.getElementById('resultItemIcon').textContent = chosen.icon || '🗡️';
 
         state.inventory.push({ name: chosen.name, rarity: chosen.rarity, icon: chosen.icon || '🗡️', image: '' });
@@ -426,7 +568,7 @@ function initWheelLabels() {
     document.getElementById('chestLid').style.transform = 'rotateX(0)';
   });
 
-  // ---------- Inventory (with Steam tab fix) ----------
+  // ---------- Inventory ----------
   let steamInventoryCache = null;
   async function loadSteamInventory() {
     try {

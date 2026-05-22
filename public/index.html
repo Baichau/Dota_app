@@ -167,21 +167,57 @@
   </div>
 
   <!-- Modals -->
-            <div id="wheelModal" class="modal-overlay hidden">
+  <div id="wheelModal" class="modal-overlay hidden">
     <div class="wheel-modal">
-        <button class="modal-close" id="wheelModalClose">&times;</button>
-        <h2>Daily Bonus Wheel</h2>
-        <div class="wheel-container">
+      <button class="modal-close" id="wheelModalClose">&times;</button>
+      <h2>Daily Bonus Wheel</h2>
+      <div class="wheel-container">
         <div class="wheel-spinner" id="wheelSpinner">
-            <div class="wheel-labels"></div>
+          <div class="wheel-labels"></div>
         </div>
         <div class="wheel-pointer">▼</div>
+      </div>
+      <p id="wheelNote">Spin anytime! No cooldown.</p>
+      <p id="wheelResult" style="font-weight: bold; margin-top: 10px;"></p>
+      <button class="btn-gold" id="btnSpinWheel">SPIN</button>
+    </div>
+  </div>
+
+  <div id="caseModal" class="modal-overlay hidden">
+    <div class="case-modal">
+      <button class="modal-close" id="caseModalClose">&times;</button>
+      <h2>Opening <span id="caseModalName">Case</span></h2>
+      <p>Cost: <span id="caseModalCost">0</span> ⭐</p>
+      
+      <!-- Chest animation stage -->
+      <div id="chestStage">
+        <div class="chest-wrapper">
+          <div class="chest-lid" id="chestLid"></div>
+          <div class="chest-base">
+            <div class="chest-lock">🔒</div>
+          </div>
+          <div class="chest-glow"></div>
         </div>
-        <p id="wheelNote">Spin once per day</p>
-        <p id="wheelResult" style="font-weight: bold; margin-top: 10px;"></p>
-        <button class="btn-gold" id="btnSpinWheel">SPIN</button>
+        <button class="btn-gold" id="btnOpenChest">Open Case</button>
+      </div>
+      
+      <!-- Rolling preview -->
+      <div id="rollPreview" class="roll-preview hidden">
+        <p>Rolling... <span id="rollItemName">???</span></p>
+      </div>
+      
+      <!-- Result stage -->
+      <div id="resultStage" class="hidden">
+        <div class="result-item-card">
+          <div class="result-item-glow" id="resultItemGlow"></div>
+          <div class="result-item-icon" id="resultItemIcon">🗡️</div>
+          <h3 id="resultItemName">Item</h3>
+          <p class="result-item-rarity" id="resultItemRarity">Common</p>
+        </div>
+        <button class="btn-gold" id="btnClaimItem">Claim Item</button>
+      </div>
     </div>
-    </div>
+  </div>
 
   <div id="toastContainer" class="toast-container"></div>
   <div id="firstCaseBanner" class="first-case-banner hidden">
