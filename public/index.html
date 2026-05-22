@@ -1,301 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DotaQuest Hub — Forge Your Legacy</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>DotaQuest Hub – Complete Dota 2 Quests & Cases</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
 </head>
 <body>
-    <div id="app">
-        <!-- Particle Background -->
-        <div class="particles-container" id="particles"></div>
+  <div class="particles-container"></div>
 
-        <!-- Sidebar Navigation -->
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <span class="logo-icon">⚔️</span>
-                    <span class="logo-text">DotaQuest</span>
-                </div>
-                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
-                    <span></span><span></span><span></span>
-                </button>
-            </div>
-            <ul class="nav-links">
-                <li class="nav-item active" data-screen="dashboard">
-                    <span class="nav-icon">🏰</span> Dashboard
-                </li>
-                <li class="nav-item" data-screen="quests">
-                    <span class="nav-icon">📜</span> Quests
-                </li>
-                <li class="nav-item" data-screen="cases">
-                    <span class="nav-icon">🎁</span> Cases
-                </li>
-                <li class="nav-item" data-screen="inventory">
-                    <span class="nav-icon">🗃️</span> Inventory
-                </li>
-                <li class="nav-item" data-screen="events">
-                    <span class="nav-icon">🔥</span> Events
-                </li>
-                <li class="nav-item" data-screen="profile">
-                    <span class="nav-icon">👤</span> Profile
-                </li>
-            </ul>
-            <div class="sidebar-footer">
-                <div class="user-mini" id="userMini">
-                    <img src="" alt="Avatar" class="user-avatar-mini" id="userAvatarMini">
-                    <span class="user-name-mini" id="userNameMini">Not Logged In</span>
-                </div>
-                <div class="stars-mini">⭐ <span id="starsMini">0</span></div>
-            </div>
-        </nav>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">🏆</div>
+        <div class="logo-text">DotaQuest</div>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <ul class="nav-links">
+      <li class="nav-item active" data-screen="dashboard">
+        <span class="nav-icon">🏠</span> <span>Dashboard</span>
+      </li>
+      <li class="nav-item" data-screen="quests">
+        <span class="nav-icon">📜</span> <span>Quests</span>
+      </li>
+      <li class="nav-item" data-screen="cases">
+        <span class="nav-icon">🎁</span> <span>Cases</span>
+      </li>
+      <li class="nav-item" data-screen="inventory">
+        <span class="nav-icon">🎒</span> <span>Inventory</span>
+      </li>
+      <li class="nav-item" data-screen="events">
+        <span class="nav-icon">⚡</span> <span>Events</span>
+      </li>
+      <li class="nav-item" data-screen="profile">
+        <span class="nav-icon">👤</span> <span>Profile</span>
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      <div class="user-mini">
+        <img class="user-avatar-mini" id="userAvatarMini" src="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb.jpg" alt="avatar">
+        <span class="user-name-mini" id="userNameMini">Guest</span>
+      </div>
+      <div class="stars-mini">⭐ <span id="starsMini">0</span></div>
+    </div>
+  </div>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <!-- Mobile Overlay -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-        <!-- Main Content -->
-        <main class="main-content" id="mainContent">
-            <!-- Landing Screen -->
-            <section class="screen landing-screen" id="screen-landing">
-                <div class="landing-hero">
-                    <div class="hero-glow"></div>
-                    <div class="hero-emblem">
-                        <div class="emblem-ring"></div>
-                        <div class="emblem-inner">
-                            <span class="emblem-icon">⚔️</span>
-                        </div>
-                    </div>
-                    <h1 class="hero-title">DotaQuest Hub</h1>
-                    <p class="hero-subtitle">Forge Your Legacy. Earn Stars. Open Cases. Rise.</p>
-                    <p class="hero-desc">
-                        Complete skill-based quests, earn <span class="gold-text">Stars</span>, 
-                        open magical cases filled with legendary skins. Your Dota 2 journey elevated.
-                    </p>
-                    <button class="btn-steam-login" id="btnSteamLogin">
-                        <span class="steam-icon">🔑</span>
-                        Login via Steam
-                    </button>
-                    <p class="hero-note">New adventurers receive <strong class="gold-text">1,000 Stars</strong> starter pack</p>
-                    <div class="hero-features">
-                        <div class="hero-feat"><span>📜</span> Daily Quests</div>
-                        <div class="hero-feat"><span>🎁</span> Case Openings</div>
-                        <div class="hero-feat"><span>⭐</span> Free Stars</div>
-                        <div class="hero-feat"><span>🏆</span> Rare Skins</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Dashboard Screen -->
-            <section class="screen dashboard-screen hidden" id="screen-dashboard">
-                <div class="screen-header">
-                    <h2>⚔️ Dashboard</h2>
-                    <p class="screen-subtitle">Welcome back, <span id="dashName">Adventurer</span></p>
-                </div>
-                <div class="dash-stats-row">
-                    <div class="stat-card stars-card">
-                        <div class="stat-icon">⭐</div>
-                        <div class="stat-info">
-                            <span class="stat-value" id="dashStars">1000</span>
-                            <span class="stat-label">Stars Balance</span>
-                        </div>
-                    </div>
-                    <div class="stat-card cases-card">
-                        <div class="stat-icon">🎁</div>
-                        <div class="stat-info">
-                            <span class="stat-value" id="dashCases">3</span>
-                            <span class="stat-label">Cases Available</span>
-                        </div>
-                    </div>
-                    <div class="stat-card quests-card">
-                        <div class="stat-icon">📜</div>
-                        <div class="stat-info">
-                            <span class="stat-value" id="dashQuestsDone">0</span>
-                            <span class="stat-label">Quests Completed</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="dash-actions">
-                    <button class="btn-gold btn-daily-bonus" id="btnDailyBonus">
-                        🎡 Daily Bonus Wheel
-                    </button>
-                    <button class="btn-gold btn-open-case-dash" id="btnOpenCaseDash">
-                        🎁 Open a Case
-                    </button>
-                </div>
-                <div class="dash-section">
-                    <h3>📋 Active Quests</h3>
-                    <div class="active-quests" id="activeQuestsDash"></div>
-                </div>
-                <div class="dash-section">
-                    <h3>🎁 Recommended Cases</h3>
-                    <div class="recommended-cases" id="recommendedCases"></div>
-                </div>
-            </section>
-
-            <!-- Quests Screen -->
-            <section class="screen quests-screen hidden" id="screen-quests">
-                <div class="screen-header">
-                    <h2>📜 Quest Board</h2>
-                    <p class="screen-subtitle">Complete challenges, earn Stars & Cases</p>
-                </div>
-                <div class="quest-filters">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="daily">Daily</button>
-                    <button class="filter-btn" data-filter="weekly">Weekly</button>
-                    <button class="filter-btn" data-filter="active">Active</button>
-                    <button class="filter-btn" data-filter="completed">Completed</button>
-                </div>
-                <div class="quests-grid" id="questsGrid"></div>
-            </section>
-
-            <!-- Cases Screen -->
-            <section class="screen cases-screen hidden" id="screen-cases">
-                <div class="screen-header">
-                    <h2>🎁 Case Vault</h2>
-                    <p class="screen-subtitle">Spend Stars to unlock legendary treasures</p>
-                </div>
-                <div class="cases-grid" id="casesGrid"></div>
-            </section>
-
-            <!-- Inventory Screen -->
-            <section class="screen inventory-screen hidden" id="screen-inventory">
-                <div class="screen-header">
-                    <h2>🗃️ Your Inventory</h2>
-                    <p class="screen-subtitle">Your collected treasures</p>
-                </div>
-                <div class="inventory-filters">
-                    <button class="filter-btn active" data-rarity="all">All</button>
-                    <button class="filter-btn" data-rarity="Common">Common</button>
-                    <button class="filter-btn" data-rarity="Uncommon">Uncommon</button>
-                    <button class="filter-btn" data-rarity="Rare">Rare</button>
-                    <button class="filter-btn" data-rarity="Mythical">Mythical</button>
-                    <button class="filter-btn" data-rarity="Legendary">Legendary</button>
-                    <button class="filter-btn" data-rarity="Arcana">Arcana</button>
-                </div>
-                <div class="inventory-grid" id="inventoryGrid"></div>
-            </section>
-
-            <!-- Events Screen -->
-            <section class="screen events-screen hidden" id="screen-events">
-                <div class="screen-header">
-                    <h2>🔥 Community Events</h2>
-                    <p class="screen-subtitle">Special challenges & tournaments</p>
-                </div>
-                <div class="events-placeholder">
-                    <div class="event-card coming-soon">
-                        <span class="event-badge">Coming Soon</span>
-                        <h3>🏆 The International Quests</h3>
-                        <p>Special TI-themed challenges with exclusive rewards</p>
-                    </div>
-                    <div class="event-card coming-soon">
-                        <span class="event-badge">Coming Soon</span>
-                        <h3>⚔️ Battle Mode</h3>
-                        <p>Face other players in case-opening battles</p>
-                    </div>
-                    <div class="event-card coming-soon">
-                        <span class="event-badge">Coming Soon</span>
-                        <h3>🎯 Weekly Leaderboard</h3>
-                        <p>Top quest completers earn bonus Stars</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Profile Screen -->
-            <section class="screen profile-screen hidden" id="screen-profile">
-                <div class="screen-header">
-                    <h2>👤 Profile</h2>
-                </div>
-                <div class="profile-card">
-                    <img src="" alt="Avatar" class="profile-avatar" id="profileAvatar">
-                    <h3 id="profileName">Adventurer</h3>
-                    <p class="profile-steam-id" id="profileSteamId">Steam ID: Not connected</p>
-                    <div class="profile-stats">
-                        <div class="prof-stat"><span>⭐</span> <strong id="profStars">1000</strong> Stars</div>
-                        <div class="prof-stat"><span>📜</span> <strong id="profQuests">0</strong> Quests Done</div>
-                        <div class="prof-stat"><span>🎁</span> <strong id="profCases">0</strong> Cases Opened</div>
-                    </div>
-                </div>
-                <div class="profile-section">
-                    <h3>🎟️ Promo Codes</h3>
-                    <div class="promo-input-row">
-                        <input type="text" id="promoCodeInput" placeholder="Enter promo code...">
-                        <button class="btn-gold btn-promo" id="btnPromo">Redeem</button>
-                    </div>
-                    <p class="promo-hint">Try: <code>WELCOME2024</code> or <code>DOTA2LOVE</code></p>
-                </div>
-                <div class="profile-section">
-                    <h3>👥 Referral</h3>
-                    <p>Share your referral link and earn <strong class="gold-text">200 Stars</strong> per friend</p>
-                    <div class="referral-row">
-                        <input type="text" id="referralLink" readonly value="dotaquest.io/ref/user123">
-                        <button class="btn-gold btn-copy" id="btnCopyRef">📋 Copy</button>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Case Opening Modal -->
-        <div class="modal-overlay hidden" id="caseModal">
-            <div class="case-modal">
-                <button class="modal-close" id="caseModalClose">✕</button>
-                <div class="case-opening-container" id="caseOpeningContainer">
-                    <div class="chest-stage" id="chestStage">
-                        <div class="chest-wrapper">
-                            <div class="chest-body">
-                                <div class="chest-lid" id="chestLid"></div>
-                                <div class="chest-base">
-                                    <div class="chest-lock">🔒</div>
-                                </div>
-                            </div>
-                            <div class="chest-glow"></div>
-                        </div>
-                        <p class="chest-label">Click to Open</p>
-                        <button class="btn-gold btn-open-chest" id="btnOpenChest">🔓 Open Case</button>
-                    </div>
-                    <div class="result-stage hidden" id="resultStage">
-                        <div class="result-item-card">
-                            <div class="result-item-glow" id="resultItemGlow"></div>
-                            <div class="result-item-icon">🗡️</div>
-                            <h3 class="result-item-name" id="resultItemName"></h3>
-                            <span class="result-item-rarity" id="resultItemRarity"></span>
-                        </div>
-                        <button class="btn-gold btn-claim" id="btnClaimItem">✅ Claim Item</button>
-                    </div>
-                </div>
-                <div class="case-info-bar">
-                    <span>Case: <strong id="caseModalName">Loading...</strong></span>
-                    <span>Cost: ⭐ <strong id="caseModalCost">0</strong></span>
-                </div>
-            </div>
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Landing Screen -->
+    <div id="screen-landing" class="screen landing-screen">
+      <div class="landing-hero">
+        <div class="hero-glow"></div>
+        <div class="hero-emblem">
+          <div class="emblem-ring"></div>
+          <div class="emblem-inner"><span class="emblem-icon">⚔️</span></div>
         </div>
-
-        <!-- Daily Bonus Wheel Modal -->
-        <div class="modal-overlay hidden" id="wheelModal">
-            <div class="wheel-modal">
-                <button class="modal-close" id="wheelModalClose">✕</button>
-                <h2>🎡 Daily Bonus Wheel</h2>
-                <div class="wheel-container">
-                    <div class="wheel-spinner" id="wheelSpinner"></div>
-                    <div class="wheel-pointer">▼</div>
-                </div>
-                <button class="btn-gold btn-spin-wheel" id="btnSpinWheel">🎰 Spin the Wheel!</button>
-                <p class="wheel-result" id="wheelResult"></p>
-                <p class="wheel-note" id="wheelNote">Available once per day</p>
-            </div>
+        <h1 class="hero-title">DOTAQUEST HUB</h1>
+        <p class="hero-subtitle">Complete Quests · Open Cases · Earn Rewards</p>
+        <p class="hero-desc">Connect your Steam account and start your journey through the world of Dota 2. Complete daily and weekly quests, open mysterious cases, and collect rare items.</p>
+        <button class="btn-steam-login" id="btnSteamLogin">
+          <span>🔗</span> Login with Steam
+        </button>
+        <p class="hero-note">✓ Free first case  ✓ Daily spin wheel  ✓ Weekly events</p>
+        <div class="hero-features">
+          <span class="hero-feat">🏆 50+ Quests</span>
+          <span class="hero-feat">🎁 20+ Cases</span>
+          <span class="hero-feat">⭐ Exclusive Items</span>
         </div>
-
-        <!-- Toast Container -->
-        <div class="toast-container" id="toastContainer"></div>
-
-        <!-- First Case Free Banner -->
-        <div class="first-case-banner hidden" id="firstCaseBanner">
-            🎉 <strong>First Case is FREE!</strong> Head to the Cases tab to open yours now!
-            <button class="banner-close" id="bannerClose">✕</button>
-        </div>
+      </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Dashboard Screen -->
+    <div id="screen-dashboard" class="screen hidden">
+      <div class="dash-stats-row">
+        <div class="stat-card"><div class="stat-icon">⭐</div><div><span class="stat-value" id="dashStars">0</span><span class="stat-label">Stars</span></div></div>
+        <div class="stat-card"><div class="stat-icon">🎁</div><div><span class="stat-value" id="dashCases">0</span><span class="stat-label">Cases</span></div></div>
+        <div class="stat-card"><div class="stat-icon">📜</div><div><span class="stat-value" id="dashQuestsDone">0</span><span class="stat-label">Quests Done</span></div></div>
+      </div>
+      <div class="dash-actions">
+        <button class="btn-gold" id="btnDailyBonus">🎡 Daily Bonus Wheel</button>
+        <button class="btn-gold" id="btnOpenCaseDash">🎁 Open a Case</button>
+      </div>
+      <div class="dash-section">
+        <h3>🔥 Active Quests</h3>
+        <div class="active-quests" id="activeQuestsDash"></div>
+      </div>
+      <div class="dash-section">
+        <h3>✨ Recommended Cases</h3>
+        <div class="recommended-cases" id="recommendedCases"></div>
+      </div>
+    </div>
+
+    <!-- Quests Screen -->
+    <div id="screen-quests" class="screen hidden">
+      <div class="quest-filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="daily">Daily</button>
+        <button class="filter-btn" data-filter="weekly">Weekly</button>
+        <button class="filter-btn" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+      </div>
+      <div class="quests-grid" id="questsGrid"></div>
+    </div>
+
+    <!-- Cases Screen -->
+    <div id="screen-cases" class="screen hidden">
+      <div class="cases-grid" id="casesGrid"></div>
+    </div>
+
+    <!-- Inventory Screen -->
+    <div id="screen-inventory" class="screen hidden">
+      <div class="inventory-filters">
+        <button class="filter-btn active" data-rarity="all">All</button>
+        <button class="filter-btn" data-rarity="Common">Common</button>
+        <button class="filter-btn" data-rarity="Rare">Rare</button>
+        <button class="filter-btn" data-rarity="Legendary">Legendary</button>
+        <button class="filter-btn" data-rarity="Arcana">Arcana</button>
+        <button class="filter-btn" data-rarity="steam">Steam Inventory</button>
+      </div>
+      <div class="inventory-grid" id="inventoryGrid"></div>
+    </div>
+
+    <!-- Events Screen -->
+    <div id="screen-events" class="screen hidden">
+      <div class="events-placeholder">
+        <div class="event-card"><div class="event-badge">🔥 Active</div><h3>Double Stars Weekend</h3><p>All quest rewards doubled! Ends Sunday.</p></div>
+        <div class="event-card coming-soon"><div class="event-badge">📅 Coming Soon</div><h3>Halloween Treasure Hunt</h3><p>Special cases with exclusive spooky items.</p></div>
+      </div>
+    </div>
+
+    <!-- Profile Screen -->
+    <div id="screen-profile" class="screen hidden">
+      <div class="profile-card">
+        <img class="profile-avatar" id="profileAvatar" src="" alt="avatar">
+        <h2 id="profileName">Player</h2>
+        <p id="profileSteamId">Steam ID: --</p>
+        <div class="profile-stats">
+          <div class="prof-stat">⭐ <span id="profStars">0</span> Stars</div>
+          <div class="prof-stat">📜 <span id="profQuests">0</span> Quests</div>
+          <div class="prof-stat">🎁 <span id="profCases">0</span> Cases Opened</div>
+        </div>
+      </div>
+      <div class="profile-section">
+        <h3>Promo Code</h3>
+        <div class="promo-input-row">
+          <input type="text" id="promoCodeInput" placeholder="Enter code">
+          <button class="btn-gold" id="btnPromo">Redeem</button>
+        </div>
+        <p class="promo-hint">Try: WELCOME2024 or DOTA2LOVE</p>
+      </div>
+      <div class="profile-section">
+        <h3>Referral System</h3>
+        <div class="referral-row">
+          <input type="text" id="referralLink" readonly value="https://dotaquest.com/ref/abc123">
+          <button class="btn-gold" id="btnCopyRef">Copy Link</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div id="wheelModal" class="modal-overlay hidden">
+    <div class="wheel-modal">
+      <button class="modal-close" id="wheelModalClose">&times;</button>
+      <h2>Daily Bonus Wheel</h2>
+      <div class="wheel-container">
+        <div class="wheel-spinner" id="wheelSpinner">
+          <div class="wheel-labels"></div>
+        </div>
+        <div class="wheel-pointer">▼</div>
+      </div>
+      <p id="wheelNote">Spin anytime! No cooldown.</p>
+      <p id="wheelResult" style="font-weight: bold; margin-top: 10px;"></p>
+      <button class="btn-gold" id="btnSpinWheel">SPIN</button>
+    </div>
+  </div>
+
+  <div id="caseModal" class="modal-overlay hidden">
+    <div class="case-modal">
+      <button class="modal-close" id="caseModalClose">&times;</button>
+      <h2>Opening <span id="caseModalName">Case</span></h2>
+      <p>Cost: <span id="caseModalCost">0</span> ⭐</p>
+      
+      <!-- Chest animation stage -->
+      <div id="chestStage">
+        <div class="chest-wrapper">
+          <div class="chest-lid" id="chestLid"></div>
+          <div class="chest-base">
+            <div class="chest-lock">🔒</div>
+          </div>
+          <div class="chest-glow"></div>
+        </div>
+        <button class="btn-gold" id="btnOpenChest">Open Case</button>
+      </div>
+      
+      <!-- Rolling preview -->
+      <div id="rollPreview" class="roll-preview hidden">
+        <p>Rolling... <span id="rollItemName">???</span></p>
+      </div>
+      
+      <!-- Result stage -->
+      <div id="resultStage" class="hidden">
+        <div class="result-item-card">
+          <div class="result-item-glow" id="resultItemGlow"></div>
+          <div class="result-item-icon" id="resultItemIcon">🗡️</div>
+          <h3 id="resultItemName">Item</h3>
+          <p class="result-item-rarity" id="resultItemRarity">Common</p>
+        </div>
+        <button class="btn-gold" id="btnClaimItem">Claim Item</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <div id="firstCaseBanner" class="first-case-banner hidden">
+    🎁 Your first case is FREE! 🎁
+    <button class="banner-close" id="bannerClose">✖</button>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
