@@ -10,6 +10,21 @@ const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SESSION_SECRET = process.env.SESSION_SECRET;
+const STEAM_API_KEY = process.env.STEAM_API_KEY;
+const STEAM_REALM = process.env.STEAM_REALM || `http://localhost:${PORT}/`;
+const STEAM_RETURN_URL = process.env.STEAM_RETURN_URL || `http://localhost:${PORT}/auth/steam/return`;
+
+if (!SESSION_SECRET) {
+  throw new Error('SESSION_SECRET is required. Copy .env.example to .env and set a secure value.');
+}
+if (!STEAM_API_KEY) {
+  throw new Error('STEAM_API_KEY is required. Add your Steam Web API key to .env.');
+}
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
 // ---------- Ensure data directory exists ----------
 const dataDir = path.join(__dirname, 'data');
@@ -22,10 +37,15 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-  secret: 'dotaquest_hub_super_secret_key',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 * 7 } // 1 week
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24 * 7
+  }
 }));
 
 app.use(passport.initialize());
@@ -33,9 +53,9 @@ app.use(passport.session());
 
 // ---------- Steam OAuth Strategy ----------
 passport.use(new SteamStrategy({
-    returnURL: `http://localhost:${PORT}/auth/steam/return`,
-    realm: `http://localhost:${PORT}/`,
-    apiKey: process.env.STEAM_API_KEY
+    returnURL: STEAM_RETURN_URL,
+    realm: STEAM_REALM,
+    apiKey: STEAM_API_KEY
   },
   (identifier, profile, done) => {
     const user = {

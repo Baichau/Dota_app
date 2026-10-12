@@ -1,52 +1,68 @@
-# ⚔️ DotaQuest Hub
+# DotaQuest Hub
 
-**Forge Your Legacy. Earn Stars. Open Cases. Rise.**
+DotaQuest Hub is a Dota 2 fan demo for exploring quests, opening mock cases, and earning fictional Stars with Steam sign-in.
 
-DotaQuest Hub is a web platform where Dota 2 players complete skill-based quests, earn Stars, and open cases containing legendary in-game skins.  
-It features **real Steam login**, persistent user progress, a daily bonus wheel, and a fully responsive UI with a fantasy RPG aesthetic.
+![DotaQuest Hub landing page](docs/dotaquest-preview.png)
 
-![DotaQuest Hub Screenshot](https://via.placeholder.com/800x400?text=DotaQuest+Hub+Preview)  
-*(Replace with an actual screenshot of your dashboard)*
+**Live demo:** Not deployed yet.
 
----
+> Fan project, not affiliated with Valve. No real money involved. Cases, items, and rewards are illustrative demo content and do not grant real Steam items.
 
-## ✨ Features
+## Features
 
-- 🔐 **Real Steam OAuth 2.0 Login** – secure authentication via Passport‑Steam  
-- 📜 **Daily & Weekly Quests** – submit Match IDs to earn Stars and bonus cases  
-- 🎁 **Case Opening System** – weighted rarities (Common → Arcana) with animated chest opening  
-- 🎡 **Daily Bonus Wheel** – spin once per day for Stars or a free case  
-- 🗃️ **Inventory** – view collected items, filter by rarity  
-- 👤 **Profile** – track stats, redeem promo codes, copy referral link  
-- 💾 **Server‑side persistence** – all progress saved via REST API  
-- 📱 **Fully Responsive** – works on desktop, tablet, and mobile  
+- Sign in with Steam using Passport
+- Browse sample daily and weekly quests
+- Submit a match ID for OpenDota-based quest checks
+- Explore three sample cases and a fictional Stars balance
+- Save account progress to a local JSON file
+- Responsive dark fantasy interface
 
----
+Case rewards, the inventory, referral links, and some account features are mock/demo functionality; they do not interact with the Steam item marketplace.
 
-## 🛠️ Tech Stack
+## Tech stack
 
-| Layer       | Technology |
-|-------------|------------|
-| Frontend    | HTML5, CSS3, Vanilla JavaScript |
-| Backend     | Node.js + Express |
-| Auth        | Passport.js (Steam strategy) |
-| Database    | In‑memory (Map) – easily replaceable with MongoDB/PostgreSQL |
-| Styling     | Custom CSS with gold/crimson RPG theme |
-| Fonts       | Google Fonts (Cinzel Decorative, Inter) |
+- **Frontend:** HTML, CSS, and vanilla JavaScript
+- **Backend:** Node.js and Express
+- **Authentication:** Passport and `passport-steam`
+- **Persistence:** JSON file at `data/users.json` (local development only; not suitable for multi-instance or ephemeral deployments)
+- **Match data:** OpenDota API
 
----
-
-## 🚀 Getting Started
+## Getting started
 
 ### Prerequisites
 
-- Node.js (v16 or later)
-- A Steam account
-- A [Steam Web API Key](https://steamcommunity.com/dev/apikey) (set domain to `localhost` for testing)
+- Node.js 16 or newer
+- npm
+- A Steam Web API key from [steamcommunity.com/dev/apikey](https://steamcommunity.com/dev/apikey)
 
-### Installation
+### Install and run
 
-1. **Clone the repository**  
-   ```bash
-   git clone https://github.com/your-username/dotaquest-hub.git
-   cd dotaquest-hub
+```bash
+git clone https://github.com/Baichau/Dota_app.git
+cd Dota_app
+npm install
+```
+
+Copy `.env.example` to `.env` (PowerShell: `Copy-Item .env.example .env`) and set:
+
+- `STEAM_API_KEY` to your Steam Web API key
+- `SESSION_SECRET` to a unique, random secret of at least 32 characters
+
+For local use, the example Steam realm and return URL use `http://localhost:3000`. Register the matching domain and callback URL with Steam, then start the app:
+
+```bash
+npm start
+```
+
+Open [http://localhost:3000](http://localhost:3000). Never commit `.env`; it contains credentials. The app writes signed-in user data to `data/users.json`, which is ignored by Git.
+
+## Deployment notes
+
+The app has no hosted demo yet. For a deployment, set `NODE_ENV=production`, configure `STEAM_REALM` and `STEAM_RETURN_URL` to the HTTPS domain registered with Steam, and provide `STEAM_API_KEY` and a fresh `SESSION_SECRET` as host environment variables. The local JSON store is not durable on ephemeral hosts; migrate it to a managed database before relying on hosted persistence.
+
+## What I would improve next
+
+1. Move user data to a managed database with migrations and backups.
+2. Replace demo inventory, cases, and reward flows with clearly scoped, verifiable functionality.
+3. Add automated tests for authentication, quest validation, and account saves.
+4. Deploy a live demo with production secrets managed by the host.

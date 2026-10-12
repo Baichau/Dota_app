@@ -19,6 +19,7 @@ logs/
 *.log
 
 # Runtime data
+/data/users.json
 pids/
 *.pid
 *.seed
@@ -47,9 +48,6 @@ jspm_packages/
 
 # Yarn Integrity file
 .yarn-integrity
-
-# dotenv environment variables file
-.env
 
 # parcel-bundler cache
 .cache
