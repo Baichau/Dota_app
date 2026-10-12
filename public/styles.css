@@ -127,6 +127,12 @@ body {
   transition: all var(--transition);
   border: 1px solid transparent;
 }
+.nav-item:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 3px;
+}
 .nav-item:hover {
   background: rgba(200, 155, 60, 0.1);
   color: var(--gold);
@@ -209,6 +215,7 @@ body {
 }
 .landing-hero {
   position: relative;
+  width: min(100%, 760px);
   padding: 3rem;
   background: rgba(18, 18, 26, 0.7);
   backdrop-filter: blur(15px);
@@ -260,7 +267,7 @@ body {
 .emblem-icon { font-size: 3rem; }
 .hero-title {
   font-family: var(--font-runic);
-  font-size: 3.5rem;
+  font-size: clamp(2.2rem, 6vw, 3.5rem);
   font-weight: 900;
   color: var(--gold);
   text-shadow: 0 0 15px rgba(200,155,60,0.5);
@@ -316,6 +323,13 @@ body {
   border-radius: 20px;
   font-weight: 600;
   color: var(--gold);
+}
+.hero-disclaimer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(200, 155, 60, 0.25);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
 }
 
 /* Dashboard */
@@ -746,11 +760,26 @@ body {
     width: 90%;
     font-size: 0.8rem;
   }
+  .landing-hero { padding: 2rem 1.25rem; }
+  .hero-subtitle { font-size: 1.05rem; }
+  .hero-features { gap: 0.75rem; }
+  .hero-feat { padding: 0.45rem 0.8rem; }
   .item-card img {
     width: 80px;
     height: 80px;
     object-fit: contain;
     background: #1a1a24;
     border-radius: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
